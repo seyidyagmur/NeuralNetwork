@@ -17,6 +17,7 @@ import java.util.Set;
 public class Doktor {
 	int girdiSayisi = 0;
 	int veriSayisi = 0;
+	boolean bool = false;
 	String[] satirlar;
 	double momentum = 0.8;
 	double n = 0.9;
@@ -27,7 +28,7 @@ public class Doktor {
 	public double[][] agirlikGirdiFark;
 	public double[] agirlikCikisFark;
 	public double[] agirliklarCikis;
-	int gizliKatmanNoronSayisi = 10;
+	int gizliKatmanNoronSayisi = 5;
 	public double[] max;
 	public double[] min;
 	double minHedef;
@@ -42,12 +43,13 @@ public class Doktor {
 
 		araKatmanNoronlari = new ArrayList();
 
-		// double[] noron1 = { 3, 5, 2, 1, 4, 4, 6, 5, 4, 3, 2, 1, 6 };
-		// double[] noron2 = { 3, 5, 2, 1, 4, 4, 6, 5, 4, 3, 2, 1, 6 };
-		double[] noron3 = { 3, 3, 2, 1, 4, 4, 6, 5, 4, 3, 2, 1, 6 };
-		bw_olustur = dosyaOlustur(modifiyelidegerler);
+		// double[] noron3 = { 3, 3, 2, 1, 4, 4, 6, 5, 4, 3, 2, 1, 6, 6, 4, 3,
+		// 2, 1, 4, 5, 3, 2, 1, 3, 5, 12 };
+		// bw_olustur = dosyaOlustur(modifiyelidegerler);
 
-		GirisNoronEkle(noron3);
+		// bool = GirisNoronEkle(noron3);
+		if (!bool)
+			modifiyelidegerler = "degerler123.txt";
 		girdiSayisi = getirSatirSayisi();// satir sayisi
 		hedef = new double[girdiSayisi];
 
@@ -81,6 +83,7 @@ public class Doktor {
 			System.out.println(hedef[i] + " ");
 
 		}
+
 		System.out.println(" ");
 
 		for (int i = 0; i < girdiler[0].length; i++) {
@@ -124,17 +127,19 @@ public class Doktor {
 
 		}
 		agirlikDoldur();
-		int[] diziEgitim = new int[] { 1, 2, 3, 4, 5, 6, 7, 9, 11, 12 };
-		int[] diziTest = new int[] { 0, 8, 10 };
+		int[] diziEgitim = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25 };// egitim
+																														// verilerim
+
+		int[] diziTest = new int[] { 0, 10, 12, 19, 20 };// //test verilerim
 
 		EgitimeBasla(diziEgitim);
 		TesteBasla(diziTest);
 	}
 
-	void GirisNoronEkle(double[]... gelen) throws IOException {
+	boolean GirisNoronEkle(double[]... gelen) throws IOException {
 		int uzunluk = gelen.length;
 		System.out.println(gelen[0].length);
-		File file = new File("degerler2.txt");
+		File file = new File("degerler123.txt");
 		String line;
 		FileReader fileReader;
 		fileReader = new FileReader(file);
@@ -183,6 +188,7 @@ public class Doktor {
 
 		bw_olustur.close();
 		br.close();
+		return true;
 	}
 
 	String[] beklenen;
@@ -258,7 +264,10 @@ public class Doktor {
 			if (!file.exists()) {
 				file.createNewFile();
 
-				Set perms = new HashSet();
+				Set perms = new HashSet();// asagidaki kodlar, linuxda dosya
+											// izinlerini almak için gerekli,
+											// aksi durumda dosya olusturma
+				// yapılamiyor
 				perms.add(PosixFilePermission.OWNER_READ);
 				perms.add(PosixFilePermission.OWNER_WRITE);
 				perms.add(PosixFilePermission.OWNER_EXECUTE);
@@ -335,8 +344,9 @@ public class Doktor {
 
 		double[] aktivasyon = new double[gizliKatmanNoronSayisi];
 		agirlikCikisFark = new double[gizliKatmanNoronSayisi];
-		for (int a2 = 0; a2 < 4000; a2++) {
-			double hatason1 = 0;
+		double hatason1 = 0;
+
+		for (int a2 = 0; a2 < 5000; a2++) {
 			for (int i : dizi) {
 
 				double aktivasyonCikis = 0;
@@ -355,10 +365,13 @@ public class Doktor {
 
 					toplamCikis += aktivasyon[k] * agirliklarCikis[k];
 				}
-				aktivasyonCikis = 1 / (1 + (Math.exp(-1 * toplamCikis)));
-				hatason1 = hedef[i] - aktivasyonCikis;
-				hataCikis = aktivasyonCikis * (1 - aktivasyonCikis) * (hedef[i] - aktivasyonCikis);
 
+				aktivasyonCikis = 1 / (1 + (Math.exp(-1 * toplamCikis)));
+
+				hatason1 += Math.pow(hedef[i] - aktivasyonCikis, 2);
+
+				hataCikis = aktivasyonCikis * (1 - aktivasyonCikis) * (hedef[i] - aktivasyonCikis);
+				// hatason1 += hataCikis;
 				for (int k = 0; k < gizliKatmanNoronSayisi; k++) {
 					hataAra[k] = aktivasyon[k] * (1 - aktivasyon[k]) * hataCikis * agirliklarCikis[k];
 				}
@@ -382,6 +395,7 @@ public class Doktor {
 
 			try {
 				yaz.write(Math.abs(hatason1) + "\n");
+				hatason1 = 0;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -417,7 +431,7 @@ public class Doktor {
 				aktivasyon[k] = 1 / (1 + (Math.exp(-1 * toplam[k])));
 
 				toplamCikis += aktivasyon[k] * agirliklarCikis[k];
-				System.out.println(k);
+				// System.out.println(k);
 
 			}
 			aktivasyonCikis = 1 / (1 + (Math.exp(-1 * toplamCikis)));
